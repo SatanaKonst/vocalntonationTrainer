@@ -39,10 +39,6 @@ export default {
   },
   methods: {
     tune() {
-      let audioContext = new AudioContext();
-      const gainNode = audioContext.createGain();
-      // gainNode.connect(audioContext.destination);
-      let buf = new Float32Array(2048);
       navigator.mediaDevices.getUserMedia(
           {
             "audio": {
@@ -55,6 +51,11 @@ export default {
               "optional": []
             },
           }).then((stream) => {
+
+        let audioContext = new AudioContext();
+        const gainNode = audioContext.createGain();
+        // gainNode.connect(audioContext.destination);
+        let buf = new Float32Array(2048);
         // Create an AudioNode from the stream.
         let mediaStreamSource = audioContext.createMediaStreamSource(stream);
 
