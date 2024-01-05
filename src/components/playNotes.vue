@@ -1,30 +1,49 @@
 <template>
 
-  <div>
-    Show octaves
-    <ul>
-      <li v-for="(octave, octaveIndex) in octaves" :key="'showOctave'+octaveIndex">
+  <div class="col-12 col-md-3 mb-3">
+    Формат нот:
+    <ul class="list-group mb-3">
+      <li class="list-group-item">
+        <input type="radio" v-model="notePianoFormat" value="null">
+        Обе
+      </li>
+      <li class="list-group-item">
+        <input type="radio" v-model="notePianoFormat" value="helmholtz">
+        Нотация Гельмгольца
+      </li>
+      <li class="list-group-item">
+        <input type="radio" v-model="notePianoFormat" value="scientific">
+        Научная нотация
+      </li>
+    </ul>
+
+    Показать октавы
+    <ul class="list-group">
+      <li class="list-group-item" v-for="(octave, octaveIndex) in octaves" :key="'showOctave'+octaveIndex">
         <input type="checkbox" v-model="showOctaves" :value="octaveIndex">
-        {{ octaveIndex }}
+        {{ octavesTranslate[octaveIndex] }}
       </li>
     </ul>
   </div>
+  <div class="col-12 col-md-9">
+    <div class="row">
+      <template v-for="(octave, octaveIndex) in getRenderOctaves()" :key="'octave'+octaveIndex">
+        <div class="col-12 col-md-6 mb-2 ">
+          <h6>{{ octavesTranslate[octaveIndex] }}</h6>
+          <ul class="board pano-background">
+            <li v-for="(note,indexNote) in notes.helmholtz" :key="'note'+indexNote"
+                v-bind:class="getPianoBtnClass(note,indexNote)"
+                :data-note="note+octave"
+                @click="play(notes.scientific[indexNote]+octave)"
+            >
+              <span v-html="getNoteName(indexNote, octave)"></span>
+            </li>
+          </ul>
+        </div>
+      </template>
+    </div>
 
-  <ul class="board">
-    <template v-for="(octave, octaveIndex) in getRenderOctaves()" :key="'octave'+octaveIndex">
-      <li v-for="(note,indexNote) in notes.helmholtz" :key="'note'+indexNote"
-          v-bind:class="(note.indexOf('#')===-1)? 'white sq' : 'black' "
-          :data-note="note+octave"
-          @click="play(notes.scientific[indexNote]+octave)"
-      >
-      <span>
-        {{ note + octave }}<br>
-        {{ notes.scientific[indexNote] + octave }}
-      </span>
-      </li>
-    </template>
-
-  </ul>
+  </div>
 
 
 </template>
@@ -39,9 +58,10 @@ export default {
   },
   data() {
     return {
+      notePianoFormat: null,
       notes: {
-        "helmholtz": ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Mi#', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si', 'Si#'],
-        "scientific": ['C', 'C#', 'D', 'D#', 'E', 'E#', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'B#'],
+        "helmholtz": ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'],
+        "scientific": ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
       },
       octaves: {
         "sub_contractave": 0,
@@ -58,6 +78,17 @@ export default {
         'small_octave',
         'first_octave',
       ],
+      octavesTranslate: {
+        "sub_contractave": "Субконтроктава",
+        "contractave": "Контроктава",
+        "major_octave": "Большая октава",
+        "small_octave": "Малая октава",
+        "first_octave": "Первая октава",
+        "second_octave": "Вторая октава",
+        "third_octave": "Третья октава",
+        "fourth_octave": "Четвёртая октава",
+        "fifth_octave": "Пятая октава"
+      }
     }
   },
   watch: {
@@ -109,8 +140,36 @@ export default {
         currentTime += Tone.Time('8n').toSeconds()
       })
       return true;
-    }
+    },
+    getPianoBtnClass(note, noteIndex) {
+      let classes = [];
+      if (noteIndex === 0) {
+        classes.push('white');
+      }
 
+      if (note.indexOf('#') !== -1) {
+        classes.push('black');
+      } else {
+        classes.push('white');
+        if (this.notes.scientific[noteIndex - 1] && this.notes.scientific[noteIndex - 1].indexOf('#') !== -1) {
+          classes.push('sq');
+        }
+      }
+
+      return classes.join(' ');
+    },
+    getNoteName(indexNote, octava) {
+      let science = this.notes.scientific[indexNote];
+      let helmholtz = this.notes.helmholtz[indexNote];
+      if (this.notePianoFormat == 'helmholtz') {
+        return `${helmholtz + octava}`
+      }
+      if (this.notePianoFormat == 'scientific') {
+        return `${science + octava}`
+      }
+
+      return helmholtz + octava + "<br>" + science + octava;
+    }
 
   }
 }
@@ -118,6 +177,10 @@ export default {
 
 
 <style scoped>
+.pano-background {
+  background-color: palevioletred;
+}
+
 .board li {
   margin: 0;
   padding: 0;
@@ -129,13 +192,10 @@ export default {
 }
 
 ul.board {
-  height: 300px;
-  padding: 40px;
-  position: absolute;
-  border-radius: 16px;
-  background-color: palevioletred;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5) inset,
-  0 1px rgba(212, 152, 125, 0.2) inset, 0 5px 15px rgba(0, 0, 0, 0.5);
+  height: 30vh;
+  width: fit-content;
+  padding: 10px;
+  position: relative;
 }
 
 .board .white {

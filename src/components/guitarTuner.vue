@@ -1,16 +1,24 @@
 <template>
 
-  <div>
-    Freq: {{ tuneFrequency }} <br>
-    Note: {{ getNoteFromFrequency() }}
+  <div class="row">
+    <div class="col-3">Частота: </div>
+    <div class="col-9">
+      <div class="progress">
+        <div class="progress-bar" role="progressbar" :style="'width: '+tuneFrequency/10+'%;'" :aria-valuenow="tuneFrequency" aria-valuemin="0" aria-valuemax="100">{{tuneFrequency}} Hz</div>
+      </div>
+    </div>
   </div>
+  <div class="row">
+    <div class="col-3">Нота: </div>
+    <div class="col-9">
+      <h3>{{ getNoteFromFrequency() }}</h3>
+    </div>
+  </div>
+
 
 </template>
 
 <script>
-
-// Example https://stackoverflow.com/questions/69237143/how-do-i-get-the-audio-frequency-from-my-mic-using-javascript
-
 import * as Tone from 'tone'
 
 export default {
